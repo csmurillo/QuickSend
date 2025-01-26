@@ -1,11 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Camera</title>
+  <style>
+    video {
+      width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 <body>
-    <p>Hello World</p>
+
+  <h1>Capture Photo with Camera</h1>
+
+  <!-- Video element for live camera preview -->
+  <video id="video" autoplay></video>
+
+  <!-- Button to take a snapshot -->
+  <button id="snap">Take Snapshot</button>
+
+  <!-- Canvas to display the captured image -->
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const snapButton = document.getElementById('snap');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Access the device camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function(stream) {
+        // Attach the camera stream to the video element
+        video.srcObject = stream;
+      })
+      .catch(function(err) {
+        console.log("Error accessing camera: " + err);
+      });
+
+    // Capture the image when the button is clicked
+    snapButton.addEventListener('click', function() {
+      // Set canvas dimensions to match the video size
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw the current frame of the video on the canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    });
+  </script>
+
 </body>
 </html>
