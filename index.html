@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test Camera</title>
+  <title>Testing Camera</title>
   <style>
     video {
       width: 100%;
@@ -13,11 +13,14 @@
     canvas {
       border: 1px solid #ccc;
     }
+    .controls {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
 
-  <h1>Capture Photo with Camera</h1>
+  <h1>Camera with Flash and Session Control</h1>
 
   <!-- Video element for live camera preview -->
   <video id="video" autoplay></video>
@@ -28,21 +31,39 @@
   <!-- Canvas to display the captured image -->
   <canvas id="canvas"></canvas>
 
+  <!-- Flash Control and Camera Session Control -->
+  <div class="controls">
+    <button id="flash-toggle">Toggle Flash</button>
+    <button id="stop-camera">Stop Camera</button>
+  </div>
+
   <script>
     const video = document.getElementById('video');
     const snapButton = document.getElementById('snap');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+    const flashToggleButton = document.getElementById('flash-toggle');
+    const stopCameraButton = document.getElementById('stop-camera');
 
-    // Access the device camera
-    navigator.mediaDevices.getUserMedia({ video: true })
+    let cameraStream;
+    let flashEnabled = false;
+
+    // Access the back camera with flash control
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment', // Use the back camera
+          torch: flashEnabled, // Flash control
+        }
+      })
       .then(function(stream) {
-        // Attach the camera stream to the video element
+        cameraStream = stream;
         video.srcObject = stream;
       })
       .catch(function(err) {
         console.log("Error accessing camera: " + err);
       });
+    }
 
     // Capture the image when the button is clicked
     snapButton.addEventListener('click', function() {
@@ -53,6 +74,29 @@
       // Draw the current frame of the video on the canvas
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     });
+
+    // Toggle flash on/off
+    flashToggleButton.addEventListener('click', function() {
+      flashEnabled = !flashEnabled;
+      // Restart the camera with the new flash setting
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop()); // Stop existing tracks
+      }
+      startCamera();
+    });
+
+    // Stop the camera session
+    stopCameraButton.addEventListener('click', function() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop()); // Stop the camera stream
+        cameraStream = null;
+        video.srcObject = null;
+      }
+    });
+
+    // Start the camera session on page load
+    startCamera();
+
   </script>
 
 </body>
